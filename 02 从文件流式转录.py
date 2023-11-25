@@ -7,14 +7,14 @@ import numpy as np
 import time
 
 # 先用 ffmpeg 转格式
-file_path = 'out.wav'
+file_path = 'audio/out.wav'
 wav_path = 'audio/temp.wav'
 command = ['ffmpeg', '-y', '-i', file_path, '-ar', '16000', '-ac', '1', wav_path]
 subprocess.run(command, capture_output=True)
 
 # 载入模型
 model_dir = 'model'
-chunk_size = [10, 20, 10] # 左回看，片段，右回看，单位 60ms
+chunk_size = [20, 40, 20] # 左回看，片段，右回看，单位 60ms
 model = Paraformer(model_dir, batch_size=1, quantize=True, chunk_size=chunk_size, intra_op_num_threads=4) # only support batch_size = 1
 
 ##online asr
@@ -35,7 +35,6 @@ for sample_offset in range(0, speech_length, min(step, speech_length - sample_of
     param_dict['is_final'] = is_final
     data = speech[sample_offset: sample_offset + step]
     data = data.astype(np.float32)
-    print((data[0:50] * (2**15-1)).astype(np.int16))
     rec_result = model(audio_in=data, param_dict=param_dict)
     if len(rec_result) > 0:
        final_result += rec_result[0]["preds"][0]
