@@ -35,15 +35,15 @@ def recognize(queue_in: Queue, queue_out: Queue):
                 piece_num += 1
 
                 # 显示虚文字
-                if len(chunks) < chunk_size[1] and piece_num == 5:
+                if len(chunks) < chunk_size[1] and piece_num == 2:
                     piece_num = 0
                     虚字典 = deepcopy(param_dict)
                     虚字典['is_final'] = True 
                     data = np.concatenate(chunks)
                     rec_result = model(audio_in=data, param_dict=虚字典)
-                    if rec_result:
+                    if rec_result and rec_result[0]['preds'][0]:
                         文字 = rec_result[0]['preds'][0]
-                        if 文字: print(f'\033[33m{文字}\033[0m', end=f'\033[{len(文字.encode("gbk"))}D', flush=True)
+                        if 文字: print(f'\033[0K\033[33m{文字}\033[0m', end=f'\033[{len(文字.encode("gbk"))}D', flush=True)
                 elif piece_num == 5: piece_num = 0
 
                 # 显示实文字
@@ -51,10 +51,10 @@ def recognize(queue_in: Queue, queue_out: Queue):
                     param_dict['is_final'] = False
                     data = np.concatenate(chunks)
                     rec_result = model(audio_in=data, param_dict=param_dict)
-                    if rec_result: 
+                    if rec_result and rec_result[0]['preds'][0]:
                         文字 = rec_result[0]['preds'][0]
                         if 文字 and 文字[-1] in ascii_letters: 文字 += ' '  # 英文后面加空格
-                        print(f'\033[42m{文字}\033[0m', end='', flush=True)
+                        print(f'\033[0K\033[42m{文字}\033[0m', end='', flush=True)
                     chunks.clear()
 
             case 'end': 
