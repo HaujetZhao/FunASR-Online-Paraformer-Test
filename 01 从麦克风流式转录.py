@@ -11,6 +11,10 @@ from rich.console import Console
 from funasr_onnx.paraformer_online_bin import Paraformer
 import colorama; colorama.init()
 console = Console()
+import signal 
+
+
+
 
 # paraformer 的单位片段长 60ms，在 16000 采样率下，就是 960 个采样
 # 它的 chunk_size ，如果设为 [10, 20, 10]
@@ -32,7 +36,7 @@ def recognize(queue_in: Queue, queue_out: Queue):
 
     # 每攒够 5 个片段，就预测一下虚文字
     pre_num = 0; pre_expect = 5
-
+    printed_num = 0   # 记录一行已输出多少个字
     chunks = []
     param_dict = {'cache': dict()}
     while instruction := queue_in.get() :
@@ -62,7 +66,8 @@ def recognize(queue_in: Queue, queue_out: Queue):
                     if rec_result and rec_result[0]['preds'][0]:
                         文字 = rec_result[0]['preds'][0]
                         if 文字 and 文字[-1] in ascii_letters: 文字 += ' '  # 英文后面加空格
-                        print(f'\033[0K\033[32m{文字}\033[0m', end='', flush=True)
+                        print(f'\033[0K\033[32m{文字}\033[0m', end='', flush=True); printed_num += len(文字.encode('gbk'))
+                        if printed_num >= 60: print(''); printed_num=0
                     chunks.clear()
 
             case 'end': 
@@ -94,6 +99,10 @@ def record_callback(indata: np.ndarray,
 
     
 def main():
+
+    def signal_handler(sig, frame): print("\n\033[31m收到中断信号 Ctrl+C，退出程序\033[0m"); sys.exit(0)
+    signal.signal(signal.SIGINT, signal_handler)
+
     global queue_in, queue_out
     queue_in = Queue()
     queue_out = Queue()
