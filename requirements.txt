@@ -4,3 +4,4 @@ rich
 colorama
 funasr_onnx==0.2.4
 soundfile
+PyQt5

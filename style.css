@@ -1,0 +1,12 @@
+QLabel {
+    color: white; 
+    background-color: rgba(0, 0, 0, 65%); 
+    font-family: 楷体; 
+    font-size: 50px; 
+
+    border-width: 2px;
+    border-radius: 10px;
+    border-style: solid;
+    border-color: yellowgreen;
+    }
+
